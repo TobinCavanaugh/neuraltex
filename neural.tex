@@ -1,0 +1,189 @@
+\documentclass{article}
+
+\begin{document}
+
+% \newcount\w0
+% \newcount\w1
+\newcount\epoch
+\epoch=0
+
+\def\createtruth#1#2#3{%
+  \expandafter\gdef\csname truth#1#2\endcsname{#3}%
+}
+
+\def\createw#1#2{%
+  \expandafter\gdef\csname w#1\endcsname{#2}%
+}
+\def\getw#1{\csname w#1\endcsname}
+
+\def\setw#1#2{%
+    \global\expandafter\gdef\csname w#1\endcsname{#2}%
+}
+
+% ---- 
+\createw{0}{0} \createw{1}{0}
+% ----
+
+\def\gettruth#1#2{\csname truth#1#2\endcsname}
+
+% ---- 
+\createtruth{0}{0}{0} \createtruth{0}{1}{0} \createtruth{0}{2}{0}
+\createtruth{1}{0}{0} \createtruth{1}{1}{1} \createtruth{1}{2}{0}
+\createtruth{2}{0}{1} \createtruth{2}{1}{0} \createtruth{2}{2}{0}
+\createtruth{3}{0}{1} \createtruth{3}{1}{1} \createtruth{3}{2}{1}
+% ---- 
+
+\newcount\eta 
+\eta=1
+
+\newcount\b
+\b=-1
+
+\newcount\converged
+\converged=1
+
+\newcount\row
+\row=0
+
+\newcount\col 
+\col=0 
+
+\newcount\err
+\err=0
+
+
+
+
+\newcount\tmpw
+\newcount\tmpb
+\newcount\i
+% #1: p
+
+\def\backpropogate#1{
+    
+    \i=0
+
+
+    \global\tmpw=\numexpr \getw{\the\i} + \eta * \err * \gettruth{#1}{\the\i} \relax
+    \setw{\the\i}{\the\tmpw}
+    
+    \advance\i by 1
+    
+    \global\tmpw=\numexpr \getw{\the\i} + \eta * \err * \gettruth{#1}{\the\i} \relax
+    \setw{\the\i}{\the\tmpw}
+    
+
+    \global\tmpb=\numexpr \b + \eta * \err \relax
+    \global\b=\the\tmpb
+
+}
+
+
+\newcount\p
+\p=0 
+
+
+\newcount\act
+\newcount\prediction 
+\newcount\target
+
+
+\def\procrow#1{%
+    \act=\numexpr (\gettruth{#1}{0} * \getw{0}) + (\gettruth{#1}{1} * \getw{1}) + \the\b \relax 
+
+    \ifnum\act<0
+        \prediction=0
+    \else
+        \prediction=1
+    \fi
+
+    \target=\gettruth{#1}{2}
+    \err=\numexpr \target - \prediction \relax
+
+    \ifnum\err=0
+    \else 
+        \converged=0
+        \backpropogate{#1}
+    \fi
+
+}
+
+\def\converge{%
+    \procrow{0}%
+    \procrow{1}%
+    \procrow{2}%
+    \procrow{3}%
+}
+
+\newcount\loopscore
+
+\def\while#1{%
+    \loop
+    \converged=1
+    \advance\epoch by 1
+    
+    \converge%
+
+    \loopscore=0
+    \ifnum\epoch<#1 \advance\loopscore by 1 \fi 
+    \ifnum\converged=0 \advance\loopscore by 1 \fi
+    \ifnum\loopscore>1 
+    \repeat
+}
+
+\def\test#1{
+    % This looks sus but we're just reading from the truth table A & B, not the ground truth T
+    \act=\numexpr (\gettruth{#1}{0} * \getw{0}) + (\gettruth{#1}{1} * \getw{1}) + \the\b \relax
+    \ifnum\act<0
+        \prediction=0
+    \else
+        \prediction=1  
+    \fi
+
+    \the\prediction
+}
+
+\while{10}
+
+
+Truth Table (Ground Truth): 
+
+A $\vert$ B $\vert$ T
+% Print truth table
+% ---- 
+
+\def\printcols#1{%
+  \gettruth{#1}{\the\col} $\vert$
+  \advance\col by 1
+  \ifnum\col<3 
+    \printcols{#1}%
+  \fi
+}
+
+\row=0
+\loop 
+    \col=0
+    \printcols{\the\row}%
+    \par
+    \advance\row by 1
+\ifnum\row<4 \repeat
+
+% ---- 
+
+\bigskip
+
+OUTPUT: 
+
+w0: \getw{0} \quad w1: \getw{1} \quad b: \the\b
+
+
+T $\vert$
+\test{0}
+\test{1}
+\test{2}
+\test{3}
+
+
+% ---- 
+
+\end{document}
