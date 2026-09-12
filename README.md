@@ -11,3 +11,8 @@ This is fine given I only have two neurons, but if we want more complexity, a so
 Heres an image of what the output looks like, you can see that the ground truth table T column matches the output column.
 
 <img width="548" height="375" alt="image" src="https://github.com/user-attachments/assets/30036470-990f-49ab-9ee8-50173cbcd879" />
+
+
+Real TeX wizards will probably flinch at seeing my code, I flinched seeing it too. 
+
+I will probably mess around with TeX more and see if there are any more stupid-fun programs that can be written.
